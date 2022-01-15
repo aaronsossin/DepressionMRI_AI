@@ -1,0 +1,20 @@
+{
+    "Name": "Resting state with closed eyes for patients with depression and healthy participants",
+    "License": "CC0",
+    "Authors": [
+        "Bezmaternykh DD",
+        "Melnikov ME",
+        "Savelov AA",
+        "Petrovskii ED"
+    ],
+    "Acknowledgements": "Mark Shtark, Kira Natarova.",
+    "Funding": [
+        "The study was supported by Russian Science Foundation grant \u2116 16-15-00183."
+    ],
+    "BIDSVersion": "1.0.2",
+    "DatasetDOI": "10.18112/openneuro.ds002748.v1.0.5",
+    "HowToAcknowledge": "Please, cite:\nBezmaternykh D.D., Melnikov M.Y., Savelov A.A. et al. Brain Networks Connectivity in Mild to Moderate Depression: Resting State fMRI Study with Implications to Nonpharmacological Treatment. Neural Plasticity, 2021. V. 2021. \u2116 8846097. PP. 1-15.\nDOI: 10.1155/2021/8846097",
+    "ReferencesAndLinks": [
+        "https://doi.org/10.1155/2021/8846097"
+    ]
+}

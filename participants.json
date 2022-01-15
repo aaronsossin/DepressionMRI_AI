@@ -1,0 +1,93 @@
+{
+  "participant_id": {
+    "LongName": "Participant identifier",
+    "Description": "Unique participant identifier"
+  },
+  "age": {
+    "Description": "Age of the participant",
+    "Units": "years"
+  },
+  "gender": {
+    "Description": "Sex of the participant",
+    "Levels": {
+      "M": "male",
+      "F": "female"
+    }
+  },
+  "group": {
+    "Description": "Experimental group",
+    "Levels": {
+      "depr": "patients with depression",
+      "control": "healthy volunteers" 
+    }
+  },
+  "IQ_Raven": {
+    "Description": "IQ scores on Raven's Progressive Matrices",
+    "Units": "scores"
+  },
+  "ICD-10": {
+    "Description": "International Statistical Classification of Diseases and Related Health Problems 10th Revision",
+    "Levels": {
+      "F32.0": "Mild depressive episode",
+      "F32.1": "Moderate depressive episode",
+	  "F34.1": "Dysthymia",
+	  "F34.9": "Persistent mood disorder, unspecified"
+    }  
+  },
+  "MADRS": {
+    "Description": "Montgomery-Asberg Depression Rating Scale",
+    "Units": "scores"
+  },  
+  "Zung_SDS": {
+    "Description": "Zung Self-Rating Depression Scale",
+    "Units": "scores"
+  },  
+  "BDI": {
+    "Description": "Beck Depression Inventory",
+    "Units": "scores"
+  }, 
+  "HADS-anx": {
+    "Description": "The Hospital Anxiety and Depression Scale - anxiety",
+    "Units": "scores"
+  }, 
+   "HADS-depr": {
+    "Description": "The Hospital Anxiety and Depression Scale - depression",
+    "Units": "scores"
+  }, 
+   "MC-SDS": {
+    "Description": "Marlowe–Crowne Social Desirability Scale",
+    "Units": "scores"
+  },
+   "TAS-26": {
+    "Description": "Toronto Alexithymia Scale",
+    "Units": "scores"
+  },
+   "ECR-avoid": {
+    "Description": "Experiences in Close Relationship Scale - avoidance",
+    "Units": "scores"
+  },  
+  "ECR-anx": {
+    "Description": "Experiences in Close Relationship Scale - anxiety",
+    "Units": "scores"
+  }, 
+  "RRS-sum": {
+    "Description": "The ruminative response scale - sum",
+    "Units": "scores"
+  },   
+  "RRS-reflection": {
+    "Description": "The ruminative response scale - reflection",
+    "Units": "scores"
+  },
+  "RRS-brooding": {
+    "Description": "The ruminative response scale - brooding",
+    "Units": "scores"
+  },  
+  "RRS-depr": {
+    "Description": "The ruminative response scale - depression",
+    "Units": "scores"
+  }, 
+  "Edinburgh": {
+    "Description": "Edinburgh Handedness Inventory",
+    "Units": "scores"
+  }
+}
