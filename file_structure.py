@@ -10,7 +10,8 @@ class patient_folder():
     def __init__(self,id,path):
         self.id = id
         self.path = path
-        self.image_array = None
+        self.image_array = np.zeros((112,112,25,100))
+        self.is_control = False
 
 class Dataset():
     def __init__(self):
@@ -21,21 +22,25 @@ class Dataset():
 
         for pf in self.patient_folders:
             pf_object = self.patient_folders[pf]
-            # for i in glob.glob(pf_object.path + "/**/*"):
-            #     if "task" in i:
-            #         pf_object.image_array = nib.load(i)
-            #         print(pf_object.image_array.shape)
-            pf_object.image_array = load_img(pf_object.path + "/func/" + pf_object.id + "_task-rest_bold.nii.gz")
-            #print(pf_object.image_array.shape)
+            pf_object.image_array = np.array(nib.load(pf_object.path + "/func/" + pf_object.id + "_task-rest_bold.nii.gz").dataobj)
+    
+    def populate_is_control(self):
+
+        for pf in self.patient_folders:
+            pf_object = self.patient_folders[pf]
+            pf_object.is_control = True if self.participant_info[self.participant_info["participant_id"] == pf_object.id]["group"].values == "control" else False
     
     def return_brain_data(self):
 
         images = np.zeros((len(self.patient_folders),112,112,25,100))
-        print(images.shape)
+        outputs = list()
+        #print(images.shape)
         for i,pf in enumerate(self.patient_folders):
-            print(self.patient_folders[pf].image_array.shape)
+            #print(self.patient_folders[pf].image_array.shape)
             images[i,:,:,:,:] = self.patient_folders[pf].image_array
-        return images
+            outputs.append(np.zeros(25) if self.patient_folders[pf].is_control else np.ones(25))
+        outputs = np.array(outputs).flatten()
+        return images, outputs
 
     
     
