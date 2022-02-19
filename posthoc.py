@@ -3,17 +3,108 @@ import numpy as np
 from sklearn.metrics import classification_report, mean_squared_error, mean_absolute_error, recall_score, precision_score, balanced_accuracy_score, accuracy_score, average_precision_score, precision_recall_curve, roc_auc_score, roc_curve
 import pickle
 import math
+import matplotlib.pyplot as plt
 
-def roc_graphs(x_path, y_path, save_folder, save_name = "roc.png"):
-    x = np.load(x_path)
-    x = np.transpose(x).reshape(int(np.prod(list(x.shape))/12), 12)
-    x[:,-1][x[:,-1] >= 0.5] = 1
-    x[:,-1] = x[:,-1].astype('int')
-    print(x.shape)
+def regression_graphs(x_paths, y_paths, save_folder, save_name="mse.png"):
+    # Load X
 
-    # Load y
-    y = np.load(y_path)
-    print(y.shape)
+
+    for i,x_path in enumerate(x_paths):
+        if i == 0:
+            X = np.load(x_path)
+            X = np.transpose(X).reshape(int(np.prod(list(X.shape))/12), 12)
+        else:
+            x = np.load(x_path)
+            x = np.transpose(x).reshape(int(np.prod(list(x.shape))/12), 12)
+            X = np.concatenate((X,x),axis=0)
+        
+    for i,y_path in enumerate(y_paths):
+        if i == 0:
+            Y = np.load(y_path)
+        else:
+            Y = np.concatenate((Y,np.load(y_path)),axis=0)
+    
+    # Count scores
+    scores = dict()
+    evaluation_metrics = [mean_squared_error]#, mean_absolute_error]#, recall_score, precision_score, accuracy_score, balanced_accuracy_score, average_precision_score, roc_auc_score]
+    em_names = ["mse"]#,"mae","recall","precision","accuracy","balanced_accuracy","auprc","auroc"]
+    metrics = ["IQ_Raven","Zung_SDS","BDI","MC-SDS","TAS-26","ECR-avoid","ECR-anx","RRS-sum","RRS-reflection","RRS-brooding","RRS-depr"]
+    for ix,m in enumerate(metrics):
+        scores[m] = dict()
+
+        for i,em in enumerate(evaluation_metrics):
+            if i >= 2 and m != "Major_Depression":
+                scores[m][em_names[i]] = float("NaN")
+            else:
+                if em_names[i] == "auprc":
+                    # Weighted auprc
+                    scores[m][em_names[i]] = em(Y[:,ix],X[:,ix],average='weighted')
+                else:
+                    scores[m][em_names[i]] = em(Y[:,ix],X[:,ix])
+        
+    df = pd.DataFrame(scores)
+    df.transpose().plot.bar()
+    print(df.transpose())
+    plt.title("Mean Squared Error: Regression Metrics")
+    plt.ylabel("Mean Squared Error")
+    plt.xlabel("Metric")
+    plt.tight_layout()
+    plt.savefig(save_folder + save_name)
+
+def roc_graphs(x_paths, y_paths, save_folder, save_name = "roc.png"):
+
+    # Load X
+    for i,x_path in enumerate(x_paths):
+        if i == 0:
+            X = np.load(x_path)
+            X = np.transpose(X).reshape(int(np.prod(list(X.shape))/12), 12)
+        else:
+            x = np.load(x_path)
+            x = np.transpose(x).reshape(int(np.prod(list(x.shape))/12), 12)
+            X = np.concatenate((X,x),axis=0)
+        
+    for i,y_path in enumerate(y_paths):
+        if i == 0:
+            Y = np.load(y_path)
+        else:
+            Y = np.concatenate((Y,np.load(y_path)),axis=0)
+
+    fpr_mean = np.linspace(0,1,100)
+    tpr_mean = []
+    
+    fig, ax = plt.subplots(2,1)
+    fig.set_figheight(6)
+    fig.set_figwidth(6)
+
+    axes = ax.ravel()
+    fpr, tpr, _ = roc_curve(Y[:,-1],X[:,-1])
+
+    interp_tpr = np.interp(fpr_mean, fpr, tpr)
+    interp_tpr[0] = 0.0
+    tpr_mean.append(interp_tpr)
+
+    axes[0].plot(fpr_mean, np.nanmean(tpr_mean,axis=0), label="AUROC: " + str(round(roc_auc_score(Y[:,-1],X[:,-1]),2)))
+    axes[0].set_xlabel("False Positive Rate")
+    axes[0].set_ylabel("True Positive Rate")
+    axes[0].set_title("ROC Curve: Major Depression Classification")
+    axes[0].plot([0,1],[0,1],linestyle='--',label="Random Guessing")
+    axes[0].legend(loc='best')
+
+    p_mean = np.linspace(0,1,100)
+    r_mean = []
+    p, r, _ = precision_recall_curve(Y[:,-1],X[:,-1])
+    interp_r = np.interp(p_mean, p, r)
+    interp_r[0] = 1.0
+    r_mean.append(interp_r)
+
+    axes[1].plot(p_mean,np.nanmean(r_mean,axis=0), label="AUPRC: " + str(round(average_precision_score(Y[:,-1],X[:,-1]),2)))
+    axes[1].set_xlabel("Precision")
+    axes[1].set_ylabel("Recall")
+    axes[1].set_title("PR Curve: Major Depression Classification")
+    axes[1].plot([0,1],[1,0],linestyle='--',label="Random Guessing")
+    axes[1].legend(loc='best')
+    plt.tight_layout()
+    plt.savefig(save_folder + save_name + ".png",dpi=400)
 
 def derive_and_average_scores_from_run(x_paths, y_paths, save_folder, save_name="MeanResults.pickle"):
 
@@ -167,11 +258,12 @@ def derive_scores(y_path,x_path,save_folder="PermutationImportanceResults/",save
     return scores
 
 
+#scratch/users/sosaar/DepressionMRI_AI/Results/lastday_5e-08_d3_k2_m1_xx1xx395
+#/scratch/users/sosaar/DepressionMRI_AI/saved_results/please_1e-06_d4_k2_m1_xx1xx136
 
+regression_graphs(["/scratch/users/sosaar/DepressionMRI_AI/saved_results/please_1e-06_d4_k2_m1_xx1xx136/p1.npy","/scratch/users/sosaar/DepressionMRI_AI/saved_results/please_1e-06_d4_k2_m1_xx1xx136/p0.npy"],["/scratch/users/sosaar/DepressionMRI_AI/saved_results/please_1e-06_d4_k2_m1_xx1xx136/y1.npy","/scratch/users/sosaar/DepressionMRI_AI/saved_results/please_1e-06_d4_k2_m1_xx1xx136/y0.npy"],"")
 
-
-
-
+#/scratch/users/sosaar/DepressionMRI_AI/saved_results/please_1e-06_d4_k2_m1_xx1xx136
 
 
 
