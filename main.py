@@ -46,17 +46,18 @@ from posthoc import *
 ########### HYPER-PARAMETERS ####################
 dir = "/scratch/users/sosaar/DepressionMRI_AI"
 preprocess = False
-dimension = 3
-epochs = 30
+dimension = 4
+epochs = 50
 fraction_of_data = 1.0
-model_version = 1
+model_version = 5
+major_depression_label_only = False
 metrics = [tf.keras.metrics.AUC(),"accuracy","Recall","Precision", "mean_squared_error"]
-learning_rate = 1e-6
+learning_rate = 9e-6
 kfolds = 2
 loss_function =  ["mean_squared_error"]*11 + ["binary_crossentropy"]
 print(loss_function)
 multi = True
-save_signature = "lastday"
+save_signature = "heavy_vox"
 plot_prehoc = False
 save_model = True
 ##################################################
@@ -67,6 +68,7 @@ save_signature = save_signature + "m" + str(model_version) + "_"
 
 if dimension == 3:
     fraction_of_data = 0.05
+
 if preprocess and fraction_of_data != 1.0:
     assert False
 
@@ -92,8 +94,12 @@ if dimension == 4:
         chosen_model = model_3d
     elif model_version == 2:
         chosen_model = model_3d_2
-    else:
+    elif model_version == 3:
         chosen_model = model_3d_3
+    elif model_version == 4:
+        chosen_model = VoxCNN
+    else:
+        chosen_model = VoxCNN2
 else:
     X = X.reshape(int(X.shape[0] / 25), 25, X.shape[1], X.shape[2], X.shape[3])
     X = np.moveaxis(X, 4, 0)
@@ -101,6 +107,9 @@ else:
     y = np.repeat(y, 100,axis=0)
     print(y.shape)
     chosen_model = model
+
+if major_depression_label_only:
+    y = y[:,-1]
 
 kf = KFold(random_state=42,n_splits=kfolds)
 
@@ -141,7 +150,7 @@ for train_index, test_index in kf.split(X):
     history = m.fit(X_train,y_train,epochs=epochs)
 
     # Save model history for inspection
-    print_history(history,save_folder,counter)
+    print_history(history,save_folder,counter, loss_function[0])
 
     # Save prediction scores for posthoc analysis
     scores = m.evaluate(X_test,y_test)
@@ -203,6 +212,10 @@ plt.axhline(y=0.5,linestyle='--',c='black')
 plt.title(str(mean_results_dict["Major_Depression"]["auprc"]))
 plt.tight_layout()
 plt.savefig(save_folder + "quantitative_scores_all.png")
+
+roc_graphs(x_paths, y_paths, save_folder)
+
+regression_graphs(x_paths, y_paths, save_folder)
 
 
 

@@ -36,23 +36,76 @@ from keras.layers import Input, Dense, Activation, ZeroPadding2D, BatchNormaliza
 from keras.layers import AveragePooling2D, MaxPooling2D,MaxPooling3D,Dropout, GlobalMaxPooling2D, GlobalAveragePooling2D
 from keras.optimizers import Adam
 
+def VoxCNN2(learning_rate=0.0001, loss_function="binary_crossentropy",metrics=["accuracy"]):
+    inputs = Input((25,112,112,100))
+    layer = Conv3D(32, (3,3,3),activation='relu')(inputs)
+    layer = Conv3D(32, (2,2,2),activation='relu')(layer)
+    # layer = Conv3D(8, (2,2,2),activation='relu')(layer)
+    layer = MaxPooling3D((2,2,2))(layer)
+    layer = Conv3D(64, (2,2,2),activation='relu')(layer)
+    layer = Conv3D(64, (2,2,2),activation='relu')(layer)
+    # layer = Conv3D(16, (2,2,2),activation='relu')(layer)
+    layer = MaxPooling3D((2,2,2))(layer)
+    layer = Conv3D(128, (2,2,2),activation='relu')(layer)
+    layer = Conv3D(128, (2,2,2),activation='relu')(layer)
+    layer = MaxPooling3D((2,2,2))(layer)
+    layer = Dense(256,activation='relu')(layer)
+    layer = Dropout(0.5)(layer)
+    layer = Dense(128, activation='relu')(layer)
+    layer = Dropout(0.5)(layer)
+    layer = Dense(64)(layer)
 
+    c6 = Flatten()(layer)
+
+    o1 = Dense(1,activation='tanh')(c6)
+    o1 = Flatten()(o1)
+    o2 = Dense(1,activation='tanh')(c6)
+    o2 = Flatten()(o2)
+    o3 = Dense(1,activation='tanh')(c6)
+    o3 = Flatten()(o3)
+    o4 = Dense(1,activation='tanh')(c6)
+    o4 = Flatten()(o4)
+    o5 = Dense(1,activation='tanh')(c6)
+    o5 = Flatten()(o5)
+    o6 = Dense(1,activation='tanh')(c6)
+    o6 = Flatten()(o6)
+    o7 = Dense(1,activation='tanh')(c6)
+    o7 = Flatten()(o7)
+    o8 = Dense(1,activation='tanh')(c6)
+    o8 = Flatten()(o8)
+    o9 = Dense(1,activation='tanh')(c6)
+    o9 = Flatten()(o9)
+    o10 = Dense(1,activation='tanh')(c6)
+    o10 = Flatten()(o10)
+    o11 = Dense(1,activation='tanh')(c6)
+    o11 = Flatten()(o11)
+    o12 = Dense(1,activation='sigmoid')(c6)
+    o12 = Flatten()(o12)
+    model = Model(inputs=inputs,outputs=[o1,o2,o3,o4,o5,o6,o7,o8,o9,o10,o11,o12])
+    model.summary()
+
+    model.compile(optimizer = Adam(lr = learning_rate), loss = loss_function)#, metrics = metrics)
+    return model
+
+# BEST WITH VOX
 def VoxCNN(learning_rate=0.0001, loss_function="binary_crossentropy",metrics=["accuracy"]):
     inputs = Input((25,112,112,100))
-    layer = Conv3D(8, (3,3,3),activation='relu')(inputs)
-    layer = Conv3D(8, (3,3,3),activation='relu')(layer)
-    layer = Conv3D(8, (3,3,3),activation='relu')(layer)
-    layer = MaxPooling3D((3,3,3))(layer)
-    layer = Conv3D(16, (3,3,3),activation='relu')(layer)
-    layer = Conv3D(16, (3,3,3),activation='relu')(layer)
-    layer = Conv3D(16, (3,3,3),activation='relu')(layer)
-    layer = MaxPooling3D((3,3,3))(layer)
-    layer = Conv3D(32, (3,3,3),activation='relu')(layer)
-    layer = Conv3D(32, (3,3,3),activation='relu')(layer)
-    layer = MaxPooling3D((3,3,3))(layer)
-    layer = Dense(128,activation='relu')(layer)
-    layer = Dropout()(layer)
-    layer = Dense(64, activation='relu')(layer)
+    layer = Conv3D(16, (2,2,2),activation='relu')(inputs)
+    layer = Conv3D(16, (2,2,2),activation='relu')(layer)
+    # layer = Conv3D(8, (2,2,2),activation='relu')(layer)
+    layer = MaxPooling3D((2,2,2))(layer)
+    layer = Conv3D(32, (2,2,2),activation='relu')(layer)
+    layer = Conv3D(32, (2,2,2),activation='relu')(layer)
+    # layer = Conv3D(16, (2,2,2),activation='relu')(layer)
+    layer = MaxPooling3D((2,2,2))(layer)
+    layer = Conv3D(64, (2,2,2),activation='relu')(layer)
+    layer = Conv3D(64, (2,2,2),activation='relu')(layer)
+    layer = MaxPooling3D((2,2,2))(layer)
+    layer = Dense(256,activation='relu')(layer)
+    layer = Dropout(0.5)(layer)
+    layer = Dense(128, activation='relu')(layer)
+    layer = Dropout(0.5)(layer)
+    layer = Dense(64)(layer)
 
     c6 = Flatten()(layer)
 
@@ -247,7 +300,7 @@ def model_3d(learning_rate=0.0001, loss_function="binary_crossentropy",metrics=[
     #plot_model(model,to_file="model.png")
     return model
 
-def print_history(history,save_folder,k):
+def print_history(history,save_folder,k, loss_function="mean_squared_error"):
     metrics = ["IQ_Raven","Zung_SDS","BDI","MC-SDS","TAS-26","ECR-avoid","ECR-anx","RRS-sum","RRS-reflection","RRS-brooding","RRS-depr","Major_Depression"]
 
     print(list(history.history.keys()))
@@ -263,7 +316,7 @@ def print_history(history,save_folder,k):
     fig, ax = plt.subplots()
     for i in range(0,11):
         ax.plot(history.history['flatten_' + str(num+i) + '_loss'],label=str(metrics[i]))
-    ax.set_ylabel("mean_squared_error")
+    ax.set_ylabel(loss_function)
     ax.legend(bbox_to_anchor=(1.15,1), loc="upper left")
     ax2 = ax.twinx()
     ax2.plot(history.history['flatten_' + str(num+11) + '_loss'],label=str(metrics[11]),c='black',linestyle='--')
@@ -276,3 +329,5 @@ def print_history(history,save_folder,k):
     plt.tight_layout()
     plt.savefig(save_folder + "history" + str(k) + ".png")
     plt.close()
+
+VoxCNN2()
